@@ -1,4 +1,4 @@
-package parsers;
+package parsers.dom;
 import data.dom.Articles;
 import data.dom.Contacts;
 import org.w3c.dom.Document;
@@ -45,7 +45,7 @@ public class DOMUtils {
     public static List<Articles> getArticles(Node articles) {
         List<Articles> articleList = new ArrayList<>();
         NodeList articlesChildElements = articles.getChildNodes();
-        String id = "";
+        String id;
 
 
         for (int i = 0; i < articlesChildElements.getLength(); i++) {

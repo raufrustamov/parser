@@ -1,4 +1,4 @@
-package sax;
+package parsers.sax;
 
 import data.sax.SaxArticles;
 import data.sax.SaxContacts;
@@ -26,43 +26,38 @@ public class SAXHandler extends DefaultHandler {
 
 
     @Override
-    public void startDocument() throws SAXException {
+    public void startDocument() {
 
     }
 
     @Override
-    public void endDocument() throws SAXException {
+    public void endDocument() {
 
     }
 
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+    public void startElement(String uri, String localName, String qName, Attributes attributes) {
         switch (qName) {
-            case "journal":
+            case "journal" -> {
                 counter = 1;
                 journal = new SaxJournal();
-                break;
-            case "contacts":
+            }
+            case "contacts" -> {
                 counter = 2;
                 contacts = new SaxContacts();
-                break;
-            case "articles":
-                articles = new ArrayList<>();
-                break;
-            case "article":
+            }
+            case "articles" -> articles = new ArrayList<>();
+            case "article" -> {
                 counter = 3;
                 article = new SaxArticles();
                 article.setId(attributes.getValue("ID"));
-                break;
-            case "hotkeys":
-                hotkeys = new ArrayList<>();
-
-
+            }
+            case "hotkeys" -> hotkeys = new ArrayList<>();
         }
     }
 
     @Override
-    public void endElement(String uri, String localName, String qName) throws SAXException {
+    public void endElement(String uri, String localName, String qName) {
         switch (qName) {
             case "journal":
                 journal.setArticles(articles);

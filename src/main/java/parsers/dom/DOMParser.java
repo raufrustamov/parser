@@ -1,4 +1,4 @@
-package parsers;
+package parsers.dom;
 
 import data.dom.Articles;
 import data.dom.Journal;
@@ -40,7 +40,9 @@ public class DOMParser {
             }
         }
         journal.setTitle(mainTitle);
+        assert contacts != null;
         journal.setContacts(DOMUtils.getContacts(contacts));
+        assert articles != null;
         List<Articles> articleList = DOMUtils.getArticles(articles);
         journal.setArticles(articleList);
         System.out.println(journal);
