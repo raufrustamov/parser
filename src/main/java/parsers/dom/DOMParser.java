@@ -1,54 +1,54 @@
 package parsers.dom;
 
-import data.dom.Articles;
 import data.dom.Journal;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.logging.Logger;
 
 public class DOMParser {
-    private static final String XML_DOC_PATH = "testfile.xml";
 
-    public static void main(String[] args) throws ParserConfigurationException, IOException, SAXException {
-        Journal journal = new Journal();
-        Document document = DOMUtils.getDocument(XML_DOC_PATH);
-        Node rootNode = document.getFirstChild();
+    private static final Logger log = Logger.getLogger(DOMParser.class.getName());
 
+    private final String xmlFileName;
 
-        NodeList rootChild = rootNode.getChildNodes();
-        String mainTitle = null;
-        Node contacts = null;
-        Node articles = null;
-        for (int i = 0; i < rootChild.getLength(); i++) {
-            if (rootChild.item(i) instanceof Element) {
-                switch (rootChild.item(i).getNodeName()) {
-                    case "title":
-                        mainTitle = rootChild.item(i).getTextContent();
-                    case "contacts":
-                        contacts = rootChild.item(i);
+    private final Map<String, BiConsumer<Journal, Element>> journalSetters = Map.of(
+            "title", (journal, element) -> journal.setTitle(element.getTextContent()),
+            "contacts", (journal, element) -> journal.setContact(DOMUtils.getContacts(element)),
+            "articles", (journal, element) -> journal.setArticles(DOMUtils.getArticles(element))
+    );
 
-                    case "articles":
-                        articles = rootChild.item(i);
-
-                }
-            }
-        }
-        journal.setTitle(mainTitle);
-        assert contacts != null;
-        journal.setContacts(DOMUtils.getContacts(contacts));
-        assert articles != null;
-        List<Articles> articleList = DOMUtils.getArticles(articles);
-        journal.setArticles(articleList);
-        System.out.println(journal);
+    public DOMParser(String xmlFileName) {
+        this.xmlFileName = xmlFileName;
     }
 
+    public Journal parseJournal() throws IOException, ParserConfigurationException, SAXException {
+        Document document = DOMUtils.getDocument(xmlFileName);
+        Node rootNode = document.getFirstChild();
 
+        Journal journal = new Journal();
+        ElementNodeStream.of(rootNode.getChildNodes())
+                .forEach(element -> setFieldToJournal(journal, element));
+
+        return journal;
+    }
+
+    private void setFieldToJournal(Journal journal, Element element) {
+        journalSetters.getOrDefault(element.getNodeName(), (j, n) -> {})
+                .accept(journal, element);
+    }
+
+    public static void main(String[] args) throws ParserConfigurationException, IOException, SAXException {
+        DOMParser journalParser = new DOMParser("testfile.xml");
+        Journal journal = journalParser.parseJournal();
+        log.info("Result: " + journal);
+    }
 }
 
 
